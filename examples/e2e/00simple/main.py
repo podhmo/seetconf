@@ -1,5 +1,6 @@
 import sys
-from sheetconf import JSONLoader
+import sheetconf
+from sheetconf.usepydantic import Parser
 from pydantic import BaseModel
 
 
@@ -19,6 +20,5 @@ class Config(BaseModel):
 
 
 filename = sys.argv[1]
-data = JSONLoader().load(filename)
-config = Config.parse_obj(data)
+config = sheetconf.load(filename, parser=Parser(Config, loader=sheetconf.JSONLoader()))
 print(config)
