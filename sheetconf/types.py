@@ -19,7 +19,7 @@ class Loader(tx.Protocol):
 
 
 class Fetcher(tx.Protocol):
-    def fetch(self, url: str) -> t.Dict[str, t.Any]:
+    def fetch(self, url: str) -> t.Iterator[RowDict]:
         ...
 
 

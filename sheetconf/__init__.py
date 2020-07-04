@@ -1,11 +1,12 @@
 from __future__ import annotations
 import typing as t
+import pathlib
 import logging
 
 from sheetconf.types import RowDict
 
 if t.TYPE_CHECKING:
-    from sheetconf.types import Loader, Parser, ConfigT
+    from sheetconf.types import Loader, Fetcher, Parser, ConfigT
 
 logger = logging.getLogger(__name__)
 
@@ -33,20 +34,14 @@ class JSONLoader:
         return data
 
 
-class CSVLoader:
-    def __init__(self, *, ext: str = ".csv") -> None:
-        # todo: reify
+class CSVFetcher:
+    def __init__(self) -> None:
         import csv
 
-        self.ext = ext
         self._reader_class = csv.DictReader
-        self._loader = RowsLoader(self.get_rows)
 
-    def get_rows(self, filename: str, section_name: str) -> t.Iterator[RowDict]:
-        import pathlib
-
-        basedir = pathlib.Path(filename or ".")
-        with open((basedir / section_name).with_suffix(self.ext)) as rf:
+    def fetch(self, filename: str) -> t.Iterator[RowDict]:
+        with open(filename) as rf:
             reader = self._reader_class(rf)  # DictReader?
             for line in reader:
                 row = t.cast(RowDict, line)  # xxx
@@ -56,8 +51,20 @@ class CSVLoader:
                     row["description"] = None
                 yield row
 
-    def load(self, basedir: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
-        return self._loader.load(basedir, parser=parser)
+
+class CSVLoader:
+    def __init__(self, *, ext: str = ".csv") -> None:
+        self.ext = ext
+        self._fetcher: Fetcher = CSVFetcher()
+        self._loader = RowsLoader(self._get_rows)
+
+    def _get_rows(self, basedir: str, section_name: str) -> t.Iterator[RowDict]:
+        basepath = pathlib.Path(basedir or ".")
+        filepath = (basepath / section_name).with_suffix(self.ext)
+        return self._fetcher.fetch(str(filepath))
+
+    def load(self, filename: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
+        return self._loader.load(filename, parser=parser)
 
 
 class RowsLoader:
