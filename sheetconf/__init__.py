@@ -90,7 +90,9 @@ class CSVLoader:
         filepath = self._get_filepath(basedir, section_name)
         return self._fetcher.fetch(str(filepath))
 
-    def _get_filepath(self, basedir: str, section_name: str) -> pathlib.Path:
+    def _get_filepath(
+        self, basedir: t.Optional[str], section_name: str
+    ) -> pathlib.Path:
         basepath = pathlib.Path(basedir or ".")
         return (basepath / section_name).with_suffix(self.ext)
 
@@ -153,24 +155,6 @@ class RowsLoader:
                 section_data[row["name"]] = _translate(row["value"])
             data[section] = section_data
         return data
-
-
-class RawParser:
-    def __init__(
-        self, loader: Loader, *, section_names: t.Optional[t.List[str]] = None
-    ) -> None:
-        self.loader = loader
-        self._section_names = section_names
-
-    @property
-    def section_names(self) -> t.List[str]:
-        if self._section_names is None:
-            logger.warning("not support section_names, return []")
-            return []
-        return self._section_names
-
-    def parse(self, filename: str) -> t.Dict[str, t.Any]:
-        return self.loader.load(filename, parser=self)
 
 
 def loadfile(filename: str, *, parser: Parser[ConfigT]) -> ConfigT:

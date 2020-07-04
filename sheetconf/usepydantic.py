@@ -62,7 +62,7 @@ class Parser(t.Generic[ConfigT]):
 
     def unparse(
         self, ob: t.Union[ConfigT, t.Type[ConfigT]], filename: t.Optional[str] = None
-    ) -> ConfigT:
+    ) -> None:
         data = None
         if not isinstance(ob, type):
             data = ob.dict()
