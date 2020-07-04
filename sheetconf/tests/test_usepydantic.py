@@ -5,8 +5,9 @@ import pydantic
 
 
 class PersonConfig(pydantic.BaseModel):
-    name: str
-    age: int
+    name: str = pydantic.Field(description="name of person")
+    age: int = pydantic.Field(default=0)
+    nickname: t.Optional[str]
 
 
 class Config(pydantic.BaseModel):
@@ -30,7 +31,13 @@ def test_get_fields():
     introspector = Introspector(Config)
     got = list(introspector.get_fields("xxx"))
     want = [
-        {"name": "name", "value": None, "value_type": "str", "description": None},
-        {"name": "age", "value": None, "value_type": "int", "description": None},
+        {
+            "name": "name",
+            "value": None,
+            "value_type": "str",
+            "description": "name of person",
+        },
+        {"name": "age", "value": 0, "value_type": "int", "description": None},
+        {"name": "nickname", "value": None, "value_type": "str", "description": None},
     ]
     assert got == want
