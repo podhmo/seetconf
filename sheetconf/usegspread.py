@@ -1,5 +1,6 @@
 from __future__ import annotations
 import typing as t
+import typing_extensions as tx
 import pathlib
 from sheetconf.types import RowDict
 from sheetconf.langhelpers import reify
@@ -15,7 +16,7 @@ class Fetcher:
         self.sheet = sheet
 
     @reify
-    def worksheet_mapping(self) -> t.List[Worksheet]:
+    def worksheet_mapping(self) -> t.Dict[str, Worksheet]:
         return {ws.title: ws for ws in self.sheet.worksheets()}
 
     def fetch(self, sheet_title: str) -> t.Iterator[RowDict]:
@@ -27,7 +28,7 @@ class Fetcher:
         for row in ws.get("A1:E"):
             name = row[0]
             value = row[1]
-            value_type = "str"
+            value_type: tx.Literal["str", "float", "int"] = "str"
             description = None
 
             if len(row) >= 3:
@@ -48,10 +49,10 @@ class Loader:
         self,
         *,
         scopes: t.Optional[t.List[str]] = None,
-        credential_file="~/.config/sheetconf/credentials.json",
-        authorized_user_filename="~/.config/sheetconf/authorized_user.json",
+        credential_file: str = "~/.config/sheetconf/credentials.json",
+        authorized_user_filename: str = "~/.config/sheetconf/authorized_user.json",
         port: int = 0,
-    ):
+    ) -> None:
         from sheetconf import RowsLoader
         from gspread.auth import DEFAULT_SCOPES
 
