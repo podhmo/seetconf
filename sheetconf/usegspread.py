@@ -4,6 +4,7 @@ import typing_extensions as tx
 import pathlib
 from sheetconf.types import RowDict
 from sheetconf.langhelpers import reify
+from sheetconf import exceptions
 
 if t.TYPE_CHECKING:
     from sheetconf.types import Parser
@@ -92,9 +93,13 @@ class Loader:
         creds = load_credentials(filename=str(authorized_user_path))
 
         if not creds:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                str(credential_path), self.scopes
-            )
+            try:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    str(credential_path), self.scopes
+                )
+            except FileNotFoundError as e:
+                raise exceptions.CredentialsFileIsNotFound(e.filename)
+
             creds = flow.run_local_server(port=self.port)
             store_credentials(creds, filename=str(authorized_user_path))
 

@@ -1,9 +1,11 @@
 from __future__ import annotations
 import typing as t
+import sys
 import pathlib
 import logging
 
 from sheetconf.types import RowDict
+from sheetconf import exceptions
 
 if t.TYPE_CHECKING:
     from sheetconf.types import Loader, Fetcher, Parser, ConfigT
@@ -107,4 +109,15 @@ class RawParser:
 
 
 def load(filename: str, *, parser: Parser[ConfigT]) -> ConfigT:
-    return parser.parse(filename)
+    try:
+        return parser.parse(filename)
+    except exceptions.CredentialsFileIsNotFound as e:
+        print(repr(e), file=sys.stderr)
+        print(
+            f"""\tPlease save file at {e} (OAuth 2.0 client ID)""", file=sys.stderr,
+        )
+        import webbrowser
+
+        url = "https://console.cloud.google.com/apis/credentials"
+        print(f"\topening... {url}", file=sys.stderr)
+        webbrowser.open(url, new=1, autoraise=True)
