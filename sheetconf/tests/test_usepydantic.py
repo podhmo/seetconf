@@ -6,6 +6,7 @@ import pydantic
 
 class PersonConfig(pydantic.BaseModel):
     name: str
+    age: int
 
 
 class Config(pydantic.BaseModel):
@@ -15,10 +16,21 @@ class Config(pydantic.BaseModel):
 
 
 def test_section_names():
-    from sheetconf.usepydantic import Parser
+    from sheetconf.usepydantic import Introspector
 
-    dummy_loader = None
-    parser = Parser(Config, loader=dummy_loader)
-    got = parser.section_names
+    introspector = Introspector(Config)
+    got = introspector.section_names
     want = ["xxx", "yyy", "zzz_list"]
     assert sorted(got) == sorted(want)
+
+
+def test_get_fields():
+    from sheetconf.usepydantic import Introspector
+
+    introspector = Introspector(Config)
+    got = list(introspector.get_fields("xxx"))
+    want = [
+        {"name": "name", "value": None, "value_type": "str", "description": None},
+        {"name": "age", "value": None, "value_type": "int", "description": None},
+    ]
+    assert got == want
