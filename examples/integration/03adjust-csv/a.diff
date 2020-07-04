@@ -1,2 +1,13 @@
 Only in 03adjust-csv/config: logger.csv
+diff -ru 03adjust-csv/config.pre/xxx.csv 03adjust-csv/config/xxx.csv
+--- 03adjust-csv/config.pre/xxx.csv	2020-07-05 02:05:21.000000000 +0900
++++ 03adjust-csv/config/xxx.csv	2020-07-05 02:30:47.000000000 +0900
+@@ -1,3 +1,3 @@
+-name,value
+-name,xxx
+-token,xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+\ No newline at end of file
++name,value,value_type,description
++name,xxx,str,
++token,xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,str,token of xxx api
 Only in 03adjust-csv/config: yyy.csv

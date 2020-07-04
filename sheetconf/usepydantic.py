@@ -67,7 +67,7 @@ class Parser(t.Generic[ConfigT]):
                 raise
             self.loader.dump(data, filename, parser=self)
             data = self.loader.load(filename, parser=self, adjust=False)
-            return self.schema_class.parse_obj(data)
+            raise
 
     def unparse(
         self, ob: t.Union[ConfigT, t.Type[ConfigT]], filename: t.Optional[str] = None

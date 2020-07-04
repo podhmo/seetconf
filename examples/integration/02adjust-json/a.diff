@@ -1,5 +1,5 @@
 --- 02adjust-json/config.pre.json	2020-07-05 02:00:38.000000000 +0900
-+++ 02adjust-json/config.json	2020-07-05 02:06:14.000000000 +0900
++++ 02adjust-json/config.json	2020-07-05 02:30:47.000000000 +0900
 @@ -1,6 +1,13 @@
  {
 +  "logger": {

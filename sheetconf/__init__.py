@@ -89,7 +89,6 @@ class CSVLoader:
         self.ext = ext
         self._fetcher: Fetcher = CSVFetcher()
         self._loader = RowsLoader(self._get_rows)
-        self._notfound_section_list: t.List[str] = []
 
     def _get_rows(self, basedir: str, section_name: str) -> t.Iterator[RowDict]:
         filepath = self._get_filepath(basedir, section_name)
@@ -97,7 +96,6 @@ class CSVLoader:
             rows = self._fetcher.fetch(str(filepath))
             return iter(list(rows))  # for detecting FileNotFoundError here
         except FileNotFoundError:
-            self._notfound_section_list.append(section_name)
             return iter([])
 
     def _get_filepath(
@@ -109,13 +107,7 @@ class CSVLoader:
     def load(
         self, filename: str, *, parser: Parser[t.Any], adjust: bool
     ) -> t.Dict[str, t.Any]:
-        d = self._loader.load(filename, parser=parser, adjust=adjust)
-        if not self._notfound_section_list:
-            return d
-        self.dump(
-            d, filename, parser=parser, section_names=self._notfound_section_list
-        )  # todo: refactoring
-        return self._loader.load(filename, parser=parser, adjust=False)
+        return self._loader.load(filename, parser=parser, adjust=adjust)
 
     def dump(
         self,

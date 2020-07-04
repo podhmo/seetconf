@@ -1,5 +1,6 @@
 import typing as t
 import typing_extensions as tx
+import sys
 from handofcats import as_subcommand
 
 
@@ -54,6 +55,7 @@ def load(
     adjust: bool = False,
     printer: str = "pprint:pprint",
 ) -> None:
+    import pydantic
     from sheetconf import loadfile, get_loader
     from sheetconf.usepydantic import Parser
 
@@ -63,7 +65,11 @@ def load(
     loader = get_loader(format=format)
     parser = Parser(config_class, loader=loader)
 
-    data = loadfile(filename, parser=parser, adjust=adjust)
+    try:
+        data = loadfile(filename, parser=parser, adjust=adjust)
+    except pydantic.ValidationError as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
     print_function(data)
 
 
