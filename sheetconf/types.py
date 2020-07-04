@@ -14,7 +14,9 @@ class RowDict(tx.TypedDict, total=True):
 
 
 class Loader(tx.Protocol):
-    def load(self, source: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
+    def load(
+        self, source: str, *, parser: Parser[t.Any], adjust: bool
+    ) -> t.Dict[str, t.Any]:
         ...
 
     def dump(

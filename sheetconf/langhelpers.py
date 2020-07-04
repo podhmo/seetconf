@@ -34,3 +34,17 @@ def zero_value(
 ) -> t.Any:
     mapping = mapping or ZERO_MAPPING
     return mapping.get(typ)
+
+
+TRANSLATE_MAPPING: t.Dict[str, t.Callable[[t.Any], t.Any]] = {
+    "float": float,
+    "int": int,
+    "str": str,
+}  # todo: refinement
+
+
+def get_translate_function(
+    s: str, *, mapping: t.Optional[t.Dict[str, t.Callable[[t.Any], t.Any]]] = None
+) -> t.Callable[[t.Any], t.Any]:
+    mapping = mapping or TRANSLATE_MAPPING
+    return mapping.get(s) or str

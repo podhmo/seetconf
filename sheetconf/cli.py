@@ -31,7 +31,9 @@ def schema(*, config: str) -> None:
 
 
 @as_subcommand  # type: ignore
-def init(filename: str, *, config: str, format: tx.Literal["json", "csv"]) -> None:
+def init(
+    filename: str, *, config: str, format: tx.Literal["json", "csv", "spreadsheet"]
+) -> None:
     from sheetconf import savefile, get_loader
     from sheetconf.usepydantic import Parser
 
@@ -48,7 +50,8 @@ def load(
     filename: str,
     *,
     config: str,
-    format: tx.Literal["json", "csv"],
+    format: tx.Literal["json", "csv", "spreadsheet"],
+    adjust: bool = False,
     printer: str = "pprint:pprint",
 ) -> None:
     from sheetconf import loadfile, get_loader

@@ -6,6 +6,7 @@ import pathlib
 import logging
 
 from sheetconf.types import RowDict
+from sheetconf.langhelpers import get_translate_function
 from sheetconf import exceptions
 
 if t.TYPE_CHECKING:
@@ -29,7 +30,9 @@ class JSONLoader:
     def __init__(self, params: t.Optional[t.Dict[str, t.Any]] = None) -> None:
         self.params = params or {}
 
-    def load(self, filename: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
+    def load(
+        self, filename: str, *, parser: Parser[t.Any], adjust: bool
+    ) -> t.Dict[str, t.Any]:
         import json
 
         with open(filename) as rf:
@@ -97,8 +100,10 @@ class CSVLoader:
         basepath = pathlib.Path(basedir or ".")
         return (basepath / section_name).with_suffix(self.ext)
 
-    def load(self, filename: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
-        return self._loader.load(filename, parser=parser)
+    def load(
+        self, filename: str, *, parser: Parser[t.Any], adjust: bool
+    ) -> t.Dict[str, t.Any]:
+        return self._loader.load(filename, parser=parser, adjust=adjust)
 
     def dump(
         self,
@@ -143,19 +148,17 @@ class CSVLoader:
 class RowsLoader:
     def __init__(self, get_rows: t.Callable[[str, str], t.Iterator[RowDict]]) -> None:
         self._get_rows_function = get_rows
-        self._translate_functions = {
-            "float": float,
-            "int": int,
-            "str": str,
-        }  # todo: refinement
+        self._get_translate_function = get_translate_function
 
-    def load(self, filename: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
+    def load(
+        self, filename: str, *, parser: Parser[t.Any], adjust: bool
+    ) -> t.Dict[str, t.Any]:
         data: t.Dict[str, t.Any] = {}
         for section in parser.section_names:
             rows = self._get_rows_function(filename, section)
             section_data = {}
             for row in rows:
-                _translate = self._translate_functions.get(row["value_type"], str)
+                _translate = self._get_translate_function(row["value_type"])
                 section_data[row["name"]] = _translate(row["value"])
             data[section] = section_data
         return data
@@ -183,10 +186,14 @@ def savefile(
     parser.unparse(ob, filename)
 
 
-def get_loader(*, format: tx.Literal["json", "csv"]) -> Loader:
+def get_loader(*, format: tx.Literal["json", "csv", "spreadsheet"]) -> Loader:
     if format == "json":
         return JSONLoader()
     elif format == "csv":
         return CSVLoader(ext=".csv")
+    elif format == "spreadsheet":
+        from sheetconf.usegspread import Loader as GspreadLoader
+
+        return GspreadLoader()
     else:
         raise exceptions.UnsupportedFormat(format)

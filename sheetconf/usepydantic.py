@@ -58,8 +58,8 @@ class Parser(t.Generic[ConfigT]):
     def get_fields(self, section_name: str) -> t.Iterator[RowDict]:
         return self.introspector.get_fields(section_name)
 
-    def parse(self, filename: str) -> ConfigT:
-        data = self.loader.load(filename, parser=self)
+    def parse(self, filename: str, *, adjust: bool = False) -> ConfigT:
+        data = self.loader.load(filename, parser=self, adjust=adjust)
         return self.schema_class.parse_obj(data)
 
     def unparse(

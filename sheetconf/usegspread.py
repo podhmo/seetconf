@@ -71,8 +71,19 @@ class Loader:
             fetcher = self._fetchers[sheet_url] = Fetcher(sheet)
         return fetcher.fetch(section_name)
 
-    def load(self, sheet_url: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
-        return self._loader.load(sheet_url, parser=parser)
+    def load(
+        self, sheet_url: str, *, parser: Parser[t.Any], adjust: bool
+    ) -> t.Dict[str, t.Any]:
+        return self._loader.load(sheet_url, parser=parser, adjust=adjust)
+
+    def dump(
+        self,
+        ob: t.Optional[t.Dict[str, t.Any]],
+        basedir: t.Optional[str] = None,
+        *,
+        parser: Parser[t.Any],
+    ) -> None:
+        raise NotImplementedError("PLEASE")
 
     @reify
     def client(self) -> Client:
