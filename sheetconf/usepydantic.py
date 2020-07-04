@@ -15,7 +15,9 @@ class Introspector:
         return [name for name, field in self.schema_class.__fields__.items()]
 
     def get_fields(self, section_name: str) -> t.Iterator[RowDict]:
-        sub_schema: t.Type[ConfigT] = self.schema_class.__fields__[section_name].type_
+        sub_schema: pydantic.BaseModel = self.schema_class.__fields__[
+            section_name
+        ].type_
         for name, field in sub_schema.__fields__.items():
             description = field.field_info.description
             value = None

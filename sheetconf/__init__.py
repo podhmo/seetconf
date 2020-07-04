@@ -170,9 +170,10 @@ def loadfile(filename: str, *, parser: Parser[ConfigT]) -> ConfigT:
         url = "https://console.cloud.google.com/apis/credentials"
         print(f"\topening... {url}", file=sys.stderr)
         webbrowser.open(url, new=1, autoraise=True)
+        raise
 
 
 def savefile(
-    ob: ConfigT, filename: t.Optional[str] = None, *, parser: Parser[ConfigT]
+    ob: t.Any, filename: t.Optional[str] = None, *, parser: Parser[ConfigT]
 ) -> None:
     parser.unparse(ob, filename)

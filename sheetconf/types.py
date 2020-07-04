@@ -8,13 +8,22 @@ ConfigT = t.TypeVar("ConfigT", covariant=True)
 
 class RowDict(tx.TypedDict, total=True):
     name: str
-    value: str
+    value: t.Optional[str]
     value_type: tx.Literal["int", "str", "float"]
     description: t.Optional[str]
 
 
 class Loader(tx.Protocol):
     def load(self, source: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
+        ...
+
+    def dump(
+        self,
+        ob: t.Optional[t.Dict[str, t.Any]],
+        filename: t.Optional[str] = None,
+        *,
+        parser: Parser[t.Any],
+    ) -> None:
         ...
 
 

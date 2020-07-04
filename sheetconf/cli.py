@@ -28,8 +28,8 @@ def load(
     from sheetconf import loadfile
     from sheetconf.usepydantic import Parser
 
-    print_function = _import_symbol(printer)  # type: t.Callable[..., None]
-    config_class = _import_symbol(config)  # type: t.Type[t.Any]
+    print_function = t.cast(t.Callable[..., None], _import_symbol(printer))
+    config_class = t.cast(t.Type[t.Any], _import_symbol(config))
 
     if format == "json":
         from sheetconf import JSONLoader
