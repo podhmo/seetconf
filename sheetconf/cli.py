@@ -15,20 +15,20 @@ def _get_printter(module_path: str) -> t.Callable[..., t.Any]:
 def load(
     filename: str, *, format: tx.Literal["json", "csv"], printer: str = "pprint:pprint"
 ) -> None:
-    from sheetconf import RawParser, load
+    from sheetconf import RawParser, loadfile
 
     print_function = _get_printter(printer)
 
     if format == "json":
         from sheetconf import JSONLoader
 
-        data = load(filename, parser=RawParser(JSONLoader()))
+        data = loadfile(filename, parser=RawParser(JSONLoader()))
     elif format == "csv":
         import pathlib
         from sheetconf import CSVLoader
 
         section_names = [p.stem for p in pathlib.Path(filename).glob("*.csv")]
-        data = load(
+        data = loadfile(
             filename,
             parser=RawParser(CSVLoader(ext=".csv"), section_names=section_names),
         )

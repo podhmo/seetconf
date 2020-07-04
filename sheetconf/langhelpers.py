@@ -20,3 +20,17 @@ class reify(t.Generic[T]):
         val = self.wrapped(inst)
         setattr(inst, self.wrapped.__name__, val)
         return val
+
+
+ZERO_MAPPING = {
+    int: 0,
+    float: 0.0,
+    str: "",
+}
+
+
+def zero_value(
+    typ: t.Type[t.Any], *, mapping: t.Optional[t.Dict[t.Type[t.Any], t.Any]] = None
+) -> t.Any:
+    mapping = mapping or ZERO_MAPPING
+    return mapping.get(typ)

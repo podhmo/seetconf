@@ -35,6 +35,32 @@ class JSONLoader:
             data: t.Dict[str, t.Any] = json.load(rf)
         return data
 
+    def dump(
+        self,
+        ob: t.Optional[t.Dict[str, t.Any]],
+        filename: t.Optional[str] = None,
+        *,
+        parser: Parser[t.Any],
+    ) -> None:
+        ob = ob or {}
+        d = {}
+        for section in parser.section_names:
+            sob = ob.get(section) or {}
+            d[section] = {
+                row["name"]: sob.get(row["name"]) or row["value"]
+                for row in parser.get_fields(section)
+            }
+
+        import json
+        import contextlib
+
+        with contextlib.ExitStack() as s:
+            wf = sys.stdout
+            if filename is not None:
+                wf = s.enter_context(open(filename))
+            json.dump(d, wf, indent=2, ensure_ascii=False)
+            print(file=wf)
+
 
 class CSVFetcher:
     def __init__(self) -> None:
@@ -61,12 +87,51 @@ class CSVLoader:
         self._loader = RowsLoader(self._get_rows)
 
     def _get_rows(self, basedir: str, section_name: str) -> t.Iterator[RowDict]:
-        basepath = pathlib.Path(basedir or ".")
-        filepath = (basepath / section_name).with_suffix(self.ext)
+        filepath = self._get_filepath(basedir, section_name)
         return self._fetcher.fetch(str(filepath))
+
+    def _get_filepath(self, basedir: str, section_name: str) -> pathlib.Path:
+        basepath = pathlib.Path(basedir or ".")
+        return (basepath / section_name).with_suffix(self.ext)
 
     def load(self, filename: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
         return self._loader.load(filename, parser=parser)
+
+    def dump(
+        self,
+        ob: t.Optional[t.Dict[str, t.Any]],
+        basedir: t.Optional[str] = None,
+        *,
+        parser: Parser[t.Any],
+    ) -> None:
+        import csv
+        import contextlib
+
+        ob = ob or {}
+        for section in parser.section_names:
+            rows = []
+            sob = ob.get(section) or {}
+
+            for row in parser.get_fields(section):
+                if row["name"] in sob:
+                    row["value"] = sob[row["name"]]
+                rows.append(row)
+
+            with contextlib.ExitStack() as s:
+                wf = sys.stdout
+                csvpath = self._get_filepath(basedir, section)
+
+                if basedir is not None:
+                    wf = s.enter_context(open(csvpath))
+
+                if wf == sys.stdout:
+                    print(f"* file {csvpath}", file=sys.stderr)
+
+                w = csv.DictWriter(
+                    wf, fieldnames=["name", "value", "value_type", "description"]
+                )
+                w.writeheader()
+                w.writerows(rows)
 
 
 class RowsLoader:
@@ -108,7 +173,7 @@ class RawParser:
         return self.loader.load(filename, parser=self)
 
 
-def load(filename: str, *, parser: Parser[ConfigT]) -> ConfigT:
+def loadfile(filename: str, *, parser: Parser[ConfigT]) -> ConfigT:
     try:
         return parser.parse(filename)
     except exceptions.CredentialsFileIsNotFound as e:
@@ -121,3 +186,9 @@ def load(filename: str, *, parser: Parser[ConfigT]) -> ConfigT:
         url = "https://console.cloud.google.com/apis/credentials"
         print(f"\topening... {url}", file=sys.stderr)
         webbrowser.open(url, new=1, autoraise=True)
+
+
+def savefile(
+    ob: ConfigT, filename: t.Optional[str] = None, *, parser: Parser[ConfigT]
+) -> None:
+    parser.unparse(ob, filename)

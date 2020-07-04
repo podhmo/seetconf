@@ -1,0 +1,25 @@
+* file logger.csv
+* file xxx.csv
+* file yyy.csv
+{
+  "logger": {
+    "level": "DEBUG"
+  },
+  "xxx": {
+    "name": "",
+    "token": ""
+  },
+  "yyy": {
+    "name": "",
+    "token": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+  }
+}
+----------------------------------------
+name,value,value_type,description
+level,DEBUG,str,
+name,value,value_type,description
+name,,str,
+token,,str,
+name,value,value_type,description
+name,,str,name of yyy
+token,yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy,str,token of yyy
