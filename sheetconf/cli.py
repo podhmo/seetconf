@@ -1,4 +1,5 @@
 import typing as t
+import typing_extensions as tx
 from handofcats import as_subcommand
 
 
@@ -12,13 +13,25 @@ def _get_printter(module_path: str) -> t.Callable[..., t.Any]:
 
 @as_subcommand  # type: ignore
 def load(
-    filename: str, *, format: str = "json", printer: str = "pprint:pprint"
+    filename: str, *, format: tx.Literal["json", "csv"], printer: str = "pprint:pprint"
 ) -> None:
-    from sheetconf import JSONLoader, RawParser, load
+    from sheetconf import RawParser, load
 
     print_function = _get_printter(printer)
 
-    data = load(filename, parser=RawParser(JSONLoader()))
+    if format == "json":
+        from sheetconf import JSONLoader
+
+        data = load(filename, parser=RawParser(JSONLoader()))
+    elif format == "csv":
+        import pathlib
+        from sheetconf import CSVLoader
+
+        section_names = [p.stem for p in pathlib.Path(filename).glob("*.csv")]
+        data = load(
+            filename,
+            parser=RawParser(CSVLoader(ext=".csv"), section_names=section_names),
+        )
 
     print_function(data)
 
