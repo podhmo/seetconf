@@ -1,0 +1,16 @@
+--- 04adjust-missing-field-json/config.pre.json	2020-07-05 02:32:46.000000000 +0900
++++ 04adjust-missing-field-json/config.json	2020-07-05 02:33:09.000000000 +0900
+@@ -3,9 +3,11 @@
+     "level": "INFO"
+   },
+   "xxx": {
+-    "name": "xxx"
++    "name": "xxx",
++    "token": ""
+   },
+   "yyy": {
+-    "name": "yyy"
++    "name": "yyy",
++    "token": ""
+   }
+ }

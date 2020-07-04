@@ -1,0 +1,13 @@
+{
+  "logger": {
+    "level": "INFO"
+  },
+  "xxx": {
+    "name": "xxx",
+    "token": ""
+  },
+  "yyy": {
+    "name": "yyy",
+    "token": ""
+  }
+}

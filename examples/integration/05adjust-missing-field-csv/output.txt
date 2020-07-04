@@ -1,0 +1,5 @@
+2 validation errors for Config
+xxx -> token
+  field required (type=value_error.missing)
+yyy -> token
+  field required (type=value_error.missing)

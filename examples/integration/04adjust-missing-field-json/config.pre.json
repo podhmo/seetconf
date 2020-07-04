@@ -1,0 +1,11 @@
+{
+  "logger": {
+    "level": "INFO"
+  },
+  "xxx": {
+    "name": "xxx"
+  },
+  "yyy": {
+    "name": "yyy"
+  }
+}
