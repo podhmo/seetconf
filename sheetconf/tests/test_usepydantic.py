@@ -33,7 +33,7 @@ def test_get_fields():
     want = [
         {
             "name": "name",
-            "value": None,
+            "value": "",
             "value_type": "str",
             "description": "name of person",
         },
