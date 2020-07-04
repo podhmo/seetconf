@@ -6,9 +6,11 @@ def test_json_loader():
     from sheetconf import JSONLoader
 
     filename = str(get_testdata_path("./testdata/config.json"))
-    loader = JSONLoader()
+    dummy_parser = None
 
-    got = loader.load(filename)
+    loader = JSONLoader()
+    got = loader.load(filename, parser=dummy_parser)
+
     want = {
         "slack-xxx-bot": {
             "name": "someone",

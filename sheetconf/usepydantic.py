@@ -12,8 +12,8 @@ class Parser(t.Generic[ConfigT]):
 
     @property
     def section_names(self) -> t.List[str]:
-        raise NotImplementedError("todo")
-        return []
+        hints = t.get_type_hints(self.schema_class)
+        return [name for name, typ in hints.items()]
 
     def parse(self, filename: str) -> ConfigT:
         data = self.loader.load(filename, parser=self)
