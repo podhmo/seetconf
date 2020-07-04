@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-install_requires = []
+install_requires = ["pydantic"]
 dev_requires = ["black", "flake8", "mypy"]
 tests_requires = ["pytest"]
 
@@ -21,8 +21,8 @@ setup(
     extras_require={"testing": tests_requires, "dev": dev_requires},
     tests_require=tests_requires,
     test_suite="sheetconf.tests",
-#     entry_points="""
-#       [console_scripts]
-#       sheetconf = sheetconf.cli:main
-# """,
+    entry_points="""
+      [console_scripts]
+      sheetconf = sheetconf.cli:main
+""",
 )

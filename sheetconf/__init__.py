@@ -6,6 +6,8 @@ import typing_extensions as tx
 # - todo: validation
 # - todo: load csv files
 # - todo: load spreadsheet
+# - todo: add cli
+# - todo: support default value
 # - todo: support sections (as default)
 # - todo: support list
 # - todo: support nested dict
