@@ -42,7 +42,7 @@ class Parser(tx.Protocol[ConfigT]):
     def get_fields(self, section_name: str) -> t.Iterator[RowDict]:
         ...
 
-    def parse(self, filename: str) -> ConfigT:
+    def parse(self, filename: str, *, adjust: bool = False) -> ConfigT:
         ...
 
     def unparse(self, ob: t.Any, filename: t.Optional[str] = None) -> None:

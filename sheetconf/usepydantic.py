@@ -60,7 +60,14 @@ class Parser(t.Generic[ConfigT]):
 
     def parse(self, filename: str, *, adjust: bool = False) -> ConfigT:
         data = self.loader.load(filename, parser=self, adjust=adjust)
-        return self.schema_class.parse_obj(data)
+        try:
+            return self.schema_class.parse_obj(data)
+        except pydantic.ValidationError:
+            if not adjust:
+                raise
+            self.loader.dump(data, filename, parser=self)
+            data = self.loader.load(filename, parser=self, adjust=False)
+            return self.schema_class.parse_obj(data)
 
     def unparse(
         self, ob: t.Union[ConfigT, t.Type[ConfigT]], filename: t.Optional[str] = None

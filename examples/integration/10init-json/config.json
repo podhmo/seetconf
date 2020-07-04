@@ -1,5 +1,12 @@
 {
+  "logger": {
+    "level": "DEBUG"
+  },
   "xxx": {
+    "name": "",
+    "token": ""
+  },
+  "yyy": {
     "name": "",
     "token": ""
   }

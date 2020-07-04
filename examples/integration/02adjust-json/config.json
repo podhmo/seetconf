@@ -1,13 +1,13 @@
 {
   "logger": {
-    "level": "INFO"
+    "level": "DEBUG"
   },
   "xxx": {
     "name": "xxx",
     "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   },
   "yyy": {
-    "name": "yyy",
-    "token": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+    "name": "",
+    "token": ""
   }
 }

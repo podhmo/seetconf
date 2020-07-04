@@ -89,10 +89,16 @@ class CSVLoader:
         self.ext = ext
         self._fetcher: Fetcher = CSVFetcher()
         self._loader = RowsLoader(self._get_rows)
+        self._notfound_section_list: t.List[str] = []
 
     def _get_rows(self, basedir: str, section_name: str) -> t.Iterator[RowDict]:
         filepath = self._get_filepath(basedir, section_name)
-        return self._fetcher.fetch(str(filepath))
+        try:
+            rows = self._fetcher.fetch(str(filepath))
+            return iter(list(rows))  # for detecting FileNotFoundError here
+        except FileNotFoundError:
+            self._notfound_section_list.append(section_name)
+            return iter([])
 
     def _get_filepath(
         self, basedir: t.Optional[str], section_name: str
@@ -103,7 +109,13 @@ class CSVLoader:
     def load(
         self, filename: str, *, parser: Parser[t.Any], adjust: bool
     ) -> t.Dict[str, t.Any]:
-        return self._loader.load(filename, parser=parser, adjust=adjust)
+        d = self._loader.load(filename, parser=parser, adjust=adjust)
+        if not self._notfound_section_list:
+            return d
+        self.dump(
+            d, filename, parser=parser, section_names=self._notfound_section_list
+        )  # todo: refactoring
+        return self._loader.load(filename, parser=parser, adjust=False)
 
     def dump(
         self,
@@ -111,6 +123,7 @@ class CSVLoader:
         basedir: t.Optional[str] = None,
         *,
         parser: Parser[t.Any],
+        section_names: t.Optional[t.List[str]] = None,
     ) -> None:
         import csv
         import contextlib
@@ -119,7 +132,8 @@ class CSVLoader:
         if basedir is not None and not pathlib.Path(basedir).exists():
             pathlib.Path(basedir).mkdir(parents=True)
 
-        for section in parser.section_names:
+        # todo: refactoring
+        for section in section_names or parser.section_names:
             rows = []
             sob = ob.get(section) or {}
 
@@ -164,9 +178,11 @@ class RowsLoader:
         return data
 
 
-def loadfile(filename: str, *, parser: Parser[ConfigT]) -> ConfigT:
+def loadfile(
+    filename: str, *, parser: Parser[ConfigT], adjust: bool = False
+) -> ConfigT:
     try:
-        return parser.parse(filename)
+        return parser.parse(filename, adjust=adjust)
     except exceptions.CredentialsFileIsNotFound as e:
         print(repr(e), file=sys.stderr)
         print(

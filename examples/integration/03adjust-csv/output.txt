@@ -1,0 +1,1 @@
+Config(logger=LoggerConfig(level='DEBUG'), xxx=XXXConfig(name='xxx', token='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'), yyy=YYYConfig(name='', token=''))

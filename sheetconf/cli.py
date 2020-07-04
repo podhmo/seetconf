@@ -63,7 +63,7 @@ def load(
     loader = get_loader(format=format)
     parser = Parser(config_class, loader=loader)
 
-    data = loadfile(filename, parser=parser)
+    data = loadfile(filename, parser=parser, adjust=adjust)
     print_function(data)
 
 
