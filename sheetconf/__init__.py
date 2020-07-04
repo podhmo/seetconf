@@ -2,6 +2,14 @@ from __future__ import annotations
 import typing as t
 import typing_extensions as tx
 
+# TODO
+# - todo: validation
+# - todo: load csv files
+# - todo: load spreadsheet
+# - todo: support sections (as default)
+# - todo: support list
+# - todo: support nested dict
+
 
 class Loader(tx.Protocol):
     def load(self, source: str) -> t.Dict[str, t.Any]:
