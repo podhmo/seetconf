@@ -9,6 +9,10 @@ format:
 #	pip install -e .[dev]
 	black sheetconf setup.py
 
+examples:
+	$(MAKE) -C examples
+.PHONY: examples
+
 # https://www.flake8rules.com/rules/W503.html
 # https://www.flake8rules.com/rules/E203.html
 # https://www.flake8rules.com/rules/E501.html
