@@ -1,5 +1,6 @@
 from __future__ import annotations
 import typing as t
+import typing_extensions as tx
 import sys
 import pathlib
 import logging
@@ -57,7 +58,7 @@ class JSONLoader:
         with contextlib.ExitStack() as s:
             wf = sys.stdout
             if filename is not None:
-                wf = s.enter_context(open(filename))
+                wf = s.enter_context(open(filename, "w"))
             json.dump(d, wf, indent=2, ensure_ascii=False)
             print(file=wf)
 
@@ -110,6 +111,9 @@ class CSVLoader:
         import contextlib
 
         ob = ob or {}
+        if basedir is not None and not pathlib.Path(basedir).exists():
+            pathlib.Path(basedir).mkdir(parents=True)
+
         for section in parser.section_names:
             rows = []
             sob = ob.get(section) or {}
@@ -124,7 +128,7 @@ class CSVLoader:
                 csvpath = self._get_filepath(basedir, section)
 
                 if basedir is not None:
-                    wf = s.enter_context(open(csvpath))
+                    wf = s.enter_context(open(csvpath, "w"))
 
                 if wf == sys.stdout:
                     print(f"* file {csvpath}", file=sys.stderr)
@@ -177,3 +181,12 @@ def savefile(
     ob: t.Any, filename: t.Optional[str] = None, *, parser: Parser[ConfigT]
 ) -> None:
     parser.unparse(ob, filename)
+
+
+def get_loader(*, format: tx.Literal["json", "csv"]) -> Loader:
+    if format == "json":
+        return JSONLoader()
+    elif format == "csv":
+        return CSVLoader(ext=".csv")
+    else:
+        raise exceptions.UnsupportedFormat(format)

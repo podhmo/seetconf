@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class XXXConfig(BaseModel):
     name: str
-    token: str
+    token: str = Field(description="token of xxx api")
 
 
 class Config(BaseModel):
