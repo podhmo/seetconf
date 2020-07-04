@@ -1,3 +1,4 @@
+# type: ignore
 from sheetconf.tests.testutils import get_testdata_path
 
 

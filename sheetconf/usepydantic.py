@@ -10,6 +10,11 @@ class Parser(t.Generic[ConfigT]):
         self.schema_class = schema_class
         self.loader = loader
 
+    @property
+    def section_names(self) -> t.List[str]:
+        raise NotImplementedError("todo")
+        return []
+
     def parse(self, filename: str) -> ConfigT:
-        data = self.loader.load(filename)
+        data = self.loader.load(filename, parser=self)
         return self.schema_class.parse_obj(data)
