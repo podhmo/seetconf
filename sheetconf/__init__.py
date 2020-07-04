@@ -4,7 +4,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 if t.TYPE_CHECKING:
-    from sheetconf.types import Loader, Parser, ConfigT
+    from sheetconf.types import Loader, Parser, ConfigT, RowDict
 
 # TODO
 # - todo: validation
@@ -26,6 +26,27 @@ class JSONLoader:
 
         with open(filename) as rf:
             data: t.Dict[str, t.Any] = json.load(rf)
+        return data
+
+
+class RowsLoader:
+    def __init__(self, get_rows: t.Callable[[str, str], t.Iterator[RowDict]]) -> None:
+        self._get_rows_function = get_rows
+        self._translate_functions = {
+            "float": float,
+            "int": int,
+            "str": str,
+        }  # todo: refinement
+
+    def load(self, filename: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
+        data: t.Dict[str, t.Any] = {}
+        for section in parser.section_names:
+            rows = self._get_rows_function(filename, section)
+            section_data = {}
+            for row in rows:
+                _translate = self._translate_functions.get(row["value_type"], str)
+                section_data[row["name"]] = _translate(row["value"])
+            data[section] = section_data
         return data
 
 

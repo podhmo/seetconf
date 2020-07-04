@@ -6,6 +6,13 @@ import typing_extensions as tx
 ConfigT = t.TypeVar("ConfigT", covariant=True)
 
 
+class RowDict(tx.TypedDict, total=True):
+    name: str
+    value: str
+    value_type: tx.Literal["int", "str", "float"]
+    description: t.Optional[str]
+
+
 class Loader(tx.Protocol):
     def load(self, source: str, *, parser: Parser[t.Any]) -> t.Dict[str, t.Any]:
         ...

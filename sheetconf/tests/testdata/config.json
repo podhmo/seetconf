@@ -1,6 +1,7 @@
 {
   "slack-xxx-bot": {
     "name": "someone",
-    "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "version": 11
   }
 }
