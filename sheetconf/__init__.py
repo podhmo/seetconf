@@ -10,7 +10,7 @@ from sheetconf.langhelpers import get_translate_function
 from sheetconf import exceptions
 
 if t.TYPE_CHECKING:
-    from sheetconf.types import Loader, Fetcher, Parser, ConfigT
+    from sheetconf.types import Loader, Parser, ConfigT
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ class CSVFetcher:
 class CSVLoader:
     def __init__(self, *, ext: str = ".csv") -> None:
         self.ext = ext
-        self._fetcher: Fetcher = CSVFetcher()
+        self._fetcher = CSVFetcher()
         self._loader = RowsLoader(self._get_rows)
 
     def _get_rows(self, basedir: str, section_name: str) -> t.Iterator[RowDict]:

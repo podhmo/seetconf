@@ -29,11 +29,6 @@ class Loader(tx.Protocol):
         ...
 
 
-class Fetcher(tx.Protocol):
-    def fetch(self, section_name: str) -> t.Iterator[RowDict]:
-        ...
-
-
 class Parser(tx.Protocol[ConfigT]):
     @property
     def section_names(self) -> t.List[str]:
