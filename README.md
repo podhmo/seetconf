@@ -4,8 +4,6 @@
 
 ## how to use it
 
-- [./examples/e2e](./examples/e2e)
-
 Get config object from spreadsheet something like below.
 https://docs.google.com/spreadsheets/d/1PgLfX5POop6QjpgjDLE9wbSWWXJYcowxRBEpxmpG8og
 
@@ -44,3 +42,7 @@ config = sheetconf.loadfile(url, parser=Parser(Config, loader=loader), adjust=Tr
 print(config)
 # Config(logger=LoggerConfig(level='INFO'), xxx=XXXConfig(name='xxx', token='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'), yyy=YYYConfig(name='yyy', token='yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'))
 ```
+
+## other
+
+- [./examples/e2e](./examples/e2e)
