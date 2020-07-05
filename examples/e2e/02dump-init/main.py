@@ -1,7 +1,8 @@
 import typing_extensions as tx
+import os
 from pydantic import BaseModel, Field
 import sheetconf
-from sheetconf.usepydantic import Introspector, Parser
+from sheetconf.usepydantic import Parser
 
 
 class LoggerConfig(BaseModel):
@@ -33,3 +34,12 @@ print("----------------------------------------")
 
 p = Parser(Config, loader=sheetconf.CSVLoader())
 p.unparse(Config)
+
+if bool(os.getenv("USESHEET")):
+    from sheetconf.usegspread import Loader
+
+    p = Parser(Config, loader=Loader())
+    p.unparse(
+        Config,
+        "https://docs.google.com/spreadsheets/d/1xLb9Sa_3PKgq_FzXatE4_UFC1hSLjcwdG1Lp4P7Ttpw/edit#gid=0",
+    )
