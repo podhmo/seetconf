@@ -97,7 +97,8 @@ def main(argv: t.Optional[t.List[str]] = None) -> t.Any:
     sub_parser.add_argument(
         "--format",
         required=True,
-        choices=["'json'", "'csv'", "'spreadsheet'"],
+        choices=["spreadsheet", "json", "csv"],
+        default="spreadsheet",
         help="-",
     )
     sub_parser.set_defaults(subcommand=fn)
@@ -111,7 +112,8 @@ def main(argv: t.Optional[t.List[str]] = None) -> t.Any:
     sub_parser.add_argument(
         "--format",
         required=True,
-        choices=["'json'", "'csv'", "'spreadsheet'"],
+        choices=["spreadsheet", "json", "csv"],
+        default="spreadsheet",
         help="-",
     )
     sub_parser.add_argument("--adjust", action="store_true", help="-")
