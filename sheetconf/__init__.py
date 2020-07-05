@@ -31,6 +31,14 @@ class JSONLoader:
 
         with open(filename) as rf:
             data: t.Dict[str, t.Any] = json.load(rf)
+
+        for section in introspector.section_names:
+            if section not in data:
+                data[section] = {}
+            sdata = data[section]
+            for row in introspector.get_fields(section):
+                if row["name"] not in sdata and row.get("value") is not None:
+                    sdata[row["name"]] = row["value"]
         return data
 
     def dump(
