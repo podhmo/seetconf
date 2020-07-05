@@ -6,6 +6,9 @@
 
 - [./examples/e2e](./examples/e2e)
 
+Get config object from spreadsheet something like below.
+https://docs.google.com/spreadsheets/d/1PgLfX5POop6QjpgjDLE9wbSWWXJYcowxRBEpxmpG8og
+
 ```python
 import sys
 import typing_extensions as tx
