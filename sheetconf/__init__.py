@@ -115,7 +115,6 @@ class CSVLoader:
         basedir: t.Optional[str] = None,
         *,
         parser: Parser[t.Any],
-        section_names: t.Optional[t.List[str]] = None,
     ) -> None:
         import csv
         import contextlib
@@ -125,7 +124,7 @@ class CSVLoader:
             pathlib.Path(basedir).mkdir(parents=True)
 
         # todo: refactoring
-        for section in section_names or parser.section_names:
+        for section in parser.section_names:
             rows = []
             sob = ob.get(section) or {}
 
