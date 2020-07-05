@@ -6,10 +6,15 @@ def test_json_loader():
     from sheetconf import JSONLoader
 
     filename = str(get_testdata_path("./testdata/config.json"))
-    dummy_introspector = None
+
+    class DummyIntrospector:
+        section_names = ["slack-xxx-bot"]
+
+        def get_fields(self, section: str):
+            return []
 
     loader = JSONLoader()
-    got = loader.load(filename, introspector=dummy_introspector, adjust=False)
+    got = loader.load(filename, introspector=DummyIntrospector(), adjust=False)
 
     want = {
         "slack-xxx-bot": {
@@ -25,10 +30,9 @@ def test_csv_loader():
     from sheetconf import CSVLoader
 
     basedir = str(get_testdata_path("./testdata/csv-config"))
-    dummy_section_names = ["slack-xxx-bot"]
 
     class DummyIntrospector:
-        section_names = dummy_section_names
+        section_names = ["slack-xxx-bot"]
 
     loader = CSVLoader()
     got = loader.load(basedir, introspector=DummyIntrospector(), adjust=False)
