@@ -25,4 +25,5 @@ setup(
       [console_scripts]
       sheetconf = sheetconf.cli:main
 """,
+    package_data={"sheetconf": ["py.typed"]},
 )
