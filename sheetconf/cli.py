@@ -1,7 +1,8 @@
 import typing as t
+
 import typing_extensions as tx
 import sys
-from handofcats import as_subcommand
+
 
 
 def _import_symbol(module_path: str) -> object:
@@ -18,7 +19,6 @@ def _import_symbol(module_path: str) -> object:
     return ob
 
 
-@as_subcommand  # type: ignore
 def schema(*, config: str) -> None:
     import json
     from pydantic.schema import schema
@@ -31,7 +31,6 @@ def schema(*, config: str) -> None:
     print()
 
 
-@as_subcommand  # type: ignore
 def init(
     filename: str, *, config: str, format: tx.Literal["json", "csv", "spreadsheet"]
 ) -> None:
@@ -46,7 +45,6 @@ def init(
     savefile(config_class, filename, parser=parser)
 
 
-@as_subcommand  # type: ignore
 def load(
     filename: str,
     *,
@@ -73,4 +71,40 @@ def load(
     print_function(data)
 
 
-as_subcommand.run()
+def main(argv: t.Optional[t.List[str]] = None) -> t.Any:
+    import argparse
+
+    parser = argparse.ArgumentParser(formatter_class=type('_HelpFormatter', (argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter), {}))
+    parser.print_usage = parser.print_help  # type: ignore
+    subparsers = parser.add_subparsers(title='subcommands', dest='subcommand')
+    subparsers.required = True
+
+    fn = schema
+    sub_parser = subparsers.add_parser(fn.__name__, help=fn.__doc__, formatter_class=parser.formatter_class)
+    sub_parser.add_argument('--config', required=True, help='-')
+    sub_parser.set_defaults(subcommand=fn)
+
+    fn = init  # type: ignore
+    sub_parser = subparsers.add_parser(fn.__name__, help=fn.__doc__, formatter_class=parser.formatter_class)
+    sub_parser.add_argument('filename', help='-')
+    sub_parser.add_argument('--config', required=True, help='-')
+    sub_parser.add_argument('--format', required=True, choices=["'json'", "'csv'", "'spreadsheet'"], help='-')
+    sub_parser.set_defaults(subcommand=fn)
+
+    fn = load  # type: ignore
+    sub_parser = subparsers.add_parser(fn.__name__, help=fn.__doc__, formatter_class=parser.formatter_class)
+    sub_parser.add_argument('filename', help='-')
+    sub_parser.add_argument('--config', required=True, help='-')
+    sub_parser.add_argument('--format', required=True, choices=["'json'", "'csv'", "'spreadsheet'"], help='-')
+    sub_parser.add_argument('--adjust', action='store_true', help='-')
+    sub_parser.add_argument('--printer', required=False, default='pprint:pprint', help='-')
+    sub_parser.set_defaults(subcommand=fn)
+
+    args = parser.parse_args(argv)
+    params = vars(args).copy()
+    subcommand = params.pop('subcommand')
+    return subcommand(**params)
+
+
+if __name__ == '__main__':
+    main()
