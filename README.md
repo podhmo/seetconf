@@ -39,8 +39,7 @@ class Config(BaseModel):
 
 
 url = "https://docs.google.com/spreadsheets/d/1PgLfX5POop6QjpgjDLE9wbSWWXJYcowxRBEpxmpG8og"
-loader = sheetconf.get_loader(format="spreadsheet")
-config = sheetconf.loadfile(url, parser=Parser(Config, loader=loader), adjust=True)
+config = sheetconf.loadfile(url, config=Config, format="spreadsheet", adjust=True)
 
 print(config)
 # Config(logger=LoggerConfig(level='INFO'), xxx=XXXConfig(name='xxx', token='xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'), yyy=YYYConfig(name='yyy', token='yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'))
