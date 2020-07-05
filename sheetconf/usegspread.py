@@ -13,7 +13,7 @@ if t.TYPE_CHECKING:
     from gspread.models import Spreadsheet, Worksheet
 
 
-class Fetcher:
+class Accessor:
     def __init__(self, sheet: Spreadsheet) -> None:
         self.sheet = sheet
 
@@ -21,7 +21,7 @@ class Fetcher:
     def worksheet_mapping(self) -> t.Dict[str, Worksheet]:
         return {ws.title: ws for ws in self.sheet.worksheets()}
 
-    def fetch(self, sheet_title: str) -> t.Iterator[RowDict]:
+    def fetch_rows(self, sheet_title: str) -> t.Iterator[RowDict]:
         if sheet_title not in self.worksheet_mapping:
             # TODO: logging
             return []
@@ -45,6 +45,25 @@ class Fetcher:
             }
             yield row_dict
 
+    def store_rows(self, _rows: t.Iterator[RowDict], sheet_title: str) -> None:
+        rows = list(_rows)
+        ws = self.worksheet_mapping.get(sheet_title)
+        if ws is None:
+            ws = self.worksheet_mapping[sheet_title] = self.sheet.add_worksheet(
+                title=sheet_title, cols="4", rows=str(len(rows) + 1)
+            )
+        values = [["name", "value", "value_type", "description"]]
+        for row in rows:
+            values.append(
+                [
+                    row["name"],
+                    str(row["value"]),
+                    row["value_type"],
+                    row["description"] or "",
+                ]
+            )
+        ws.update(f"A1:E{len(rows)+1}", values)
+
 
 class Loader:
     def __init__(
@@ -61,28 +80,40 @@ class Loader:
         self.credential_filename = credential_file
         self.authorized_user_filename = authorized_user_filename
         self.port = port
-        self._fetchers: t.Dict[str, Fetcher] = {}  # weakref?
+        self._accessors: t.Dict[str, Accessor] = {}  # weakref?
+
+    def _get_accessor(self, sheet_url: str) -> Accessor:
+        accessor = self._accessors.get(sheet_url)
+        if accessor is None:
+            sheet = self.client.open_by_url(sheet_url)
+            accessor = self._accessors[sheet_url] = Accessor(sheet)
+        return accessor
 
     def load(
         self, sheet_url: str, *, introspector: Introspector, adjust: bool
     ) -> t.Dict[str, t.Any]:
         def _get_rows(section_name: str) -> t.Iterator[RowDict]:
-            fetcher = self._fetchers.get(sheet_url)
-            if fetcher is None:
-                sheet = self.client.open_by_url(sheet_url)
-                fetcher = self._fetchers[sheet_url] = Fetcher(sheet)
-            return fetcher.fetch(section_name)
+            accessor = self._get_accessor(sheet_url)
+            return accessor.fetch_rows(section_name)
 
         return Extractor(introspector).extract_config_data(get_rows=_get_rows)
 
     def dump(
         self,
         ob: t.Optional[t.Dict[str, t.Any]],
-        basedir: t.Optional[str] = None,
+        sheet_url: t.Optional[str] = None,
         *,
         introspector: Introspector,
     ) -> None:
-        raise NotImplementedError("PLEASE")
+        if sheet_url is None:
+            raise RuntimeError("need sheet-url")
+
+        ob = ob or {}
+        accessor = self._get_accessor(sheet_url)
+        extractor = Extractor(introspector)
+        for section in introspector.section_names:
+            rows = extractor.extract_rows_with_config_data(ob, section)
+            accessor.store_rows(rows, section)
 
     @reify
     def client(self) -> Client:
