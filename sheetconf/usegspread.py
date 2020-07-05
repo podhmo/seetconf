@@ -7,7 +7,7 @@ from sheetconf.langhelpers import reify
 from sheetconf import exceptions
 
 if t.TYPE_CHECKING:
-    from sheetconf.types import Parser
+    from sheetconf.types import Introspector
     from gspread.client import Client
     from gspread.models import Spreadsheet, Worksheet
 
@@ -72,16 +72,16 @@ class Loader:
         return fetcher.fetch(section_name)
 
     def load(
-        self, sheet_url: str, *, parser: Parser[t.Any], adjust: bool
+        self, sheet_url: str, *, introspector: Introspector, adjust: bool
     ) -> t.Dict[str, t.Any]:
-        return self._loader.load(sheet_url, parser=parser, adjust=adjust)
+        return self._loader.load(sheet_url, introspector=introspector, adjust=adjust)
 
     def dump(
         self,
         ob: t.Optional[t.Dict[str, t.Any]],
         basedir: t.Optional[str] = None,
         *,
-        parser: Parser[t.Any],
+        introspector: Introspector,
     ) -> None:
         raise NotImplementedError("PLEASE")
 

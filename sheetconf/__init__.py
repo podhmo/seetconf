@@ -10,7 +10,7 @@ from sheetconf.langhelpers import get_translate_function
 from sheetconf import exceptions
 
 if t.TYPE_CHECKING:
-    from sheetconf.types import Loader, Parser, ConfigT
+    from sheetconf.types import Loader, Parser, Introspector, ConfigT
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class JSONLoader:
         self.params = params or {}
 
     def load(
-        self, filename: str, *, parser: Parser[t.Any], adjust: bool
+        self, filename: str, *, introspector: Introspector, adjust: bool
     ) -> t.Dict[str, t.Any]:
         import json
 
@@ -44,15 +44,15 @@ class JSONLoader:
         ob: t.Optional[t.Dict[str, t.Any]],
         filename: t.Optional[str] = None,
         *,
-        parser: Parser[t.Any],
+        introspector: Introspector,
     ) -> None:
         ob = ob or {}
         d = {}
-        for section in parser.section_names:
+        for section in introspector.section_names:
             sob = ob.get(section) or {}
             d[section] = {
                 row["name"]: sob.get(row["name"]) or row["value"]
-                for row in parser.get_fields(section)
+                for row in introspector.get_fields(section)
             }
 
         import json
@@ -105,16 +105,16 @@ class CSVLoader:
         return (basepath / section_name).with_suffix(self.ext)
 
     def load(
-        self, filename: str, *, parser: Parser[t.Any], adjust: bool
+        self, filename: str, *, introspector: Introspector, adjust: bool
     ) -> t.Dict[str, t.Any]:
-        return self._loader.load(filename, parser=parser, adjust=adjust)
+        return self._loader.load(filename, introspector=introspector, adjust=adjust)
 
     def dump(
         self,
         ob: t.Optional[t.Dict[str, t.Any]],
         basedir: t.Optional[str] = None,
         *,
-        parser: Parser[t.Any],
+        introspector: Introspector,
     ) -> None:
         import csv
         import contextlib
@@ -124,11 +124,11 @@ class CSVLoader:
             pathlib.Path(basedir).mkdir(parents=True)
 
         # todo: refactoring
-        for section in parser.section_names:
+        for section in introspector.section_names:
             rows = []
             sob = ob.get(section) or {}
 
-            for row in parser.get_fields(section):
+            for row in introspector.get_fields(section):
                 if row["name"] in sob:
                     row["value"] = sob[row["name"]]
                 rows.append(row)
@@ -156,10 +156,10 @@ class RowsLoader:
         self._get_translate_function = get_translate_function
 
     def load(
-        self, filename: str, *, parser: Parser[t.Any], adjust: bool
+        self, filename: str, *, introspector: Introspector, adjust: bool
     ) -> t.Dict[str, t.Any]:
         data: t.Dict[str, t.Any] = {}
-        for section in parser.section_names:
+        for section in introspector.section_names:
             rows = self._get_rows_function(filename, section)
             section_data = {}
             for row in rows:

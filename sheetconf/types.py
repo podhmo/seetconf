@@ -15,7 +15,7 @@ class RowDict(tx.TypedDict, total=True):
 
 class Loader(tx.Protocol):
     def load(
-        self, source: str, *, parser: Parser[t.Any], adjust: bool
+        self, source: str, *, introspector: Introspector, adjust: bool
     ) -> t.Dict[str, t.Any]:
         ...
 
@@ -24,12 +24,12 @@ class Loader(tx.Protocol):
         ob: t.Optional[t.Dict[str, t.Any]],
         filename: t.Optional[str] = None,
         *,
-        parser: Parser[t.Any],
+        introspector: Introspector,
     ) -> None:
         ...
 
 
-class Parser(tx.Protocol[ConfigT]):
+class Introspector(tx.Protocol):
     @property
     def section_names(self) -> t.List[str]:
         ...
@@ -37,6 +37,8 @@ class Parser(tx.Protocol[ConfigT]):
     def get_fields(self, section_name: str) -> t.Iterator[RowDict]:
         ...
 
+
+class Parser(tx.Protocol[ConfigT]):
     def parse(self, filename: str, *, adjust: bool = False) -> ConfigT:
         ...
 

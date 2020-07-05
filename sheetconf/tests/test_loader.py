@@ -7,10 +7,10 @@ def test_json_loader():
     from sheetconf import JSONLoader
 
     filename = str(get_testdata_path("./testdata/config.json"))
-    dummy_parser = None
+    dummy_introspector = None
 
     loader = JSONLoader()
-    got = loader.load(filename, parser=dummy_parser)
+    got = loader.load(filename, introspector=dummy_introspector, adjust=False)
 
     want = {
         "slack-xxx-bot": {
@@ -52,7 +52,7 @@ def test_rows_loader():
         ]
     }
 
-    class DummyParser:
+    class DummyIntrospector:
         section_names = dummy_section_names
 
     def get_rows(filename: str, section: str) -> t.Iterator[RowDict]:
@@ -60,7 +60,7 @@ def test_rows_loader():
         return rows_dict[section]
 
     loader = RowsLoader(get_rows)
-    got = loader.load(dummy_filename, parser=DummyParser())
+    got = loader.load(dummy_filename, introspector=DummyIntrospector(), adjust=False)
     want = {
         "slack-xxx-bot": {
             "name": "someone",

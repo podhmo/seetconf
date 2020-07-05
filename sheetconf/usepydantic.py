@@ -51,22 +51,17 @@ class Parser(t.Generic[ConfigT]):
         self.schema_class = schema_class
         self.loader = loader
 
-    @property
-    def section_names(self) -> t.List[str]:
-        return self.introspector.section_names
-
-    def get_fields(self, section_name: str) -> t.Iterator[RowDict]:
-        return self.introspector.get_fields(section_name)
-
     def parse(self, filename: str, *, adjust: bool = False) -> ConfigT:
-        data = self.loader.load(filename, parser=self, adjust=adjust)
+        data = self.loader.load(filename, introspector=self.introspector, adjust=adjust)
         try:
             return self.schema_class.parse_obj(data)
         except pydantic.ValidationError:
             if not adjust:
                 raise
-            self.loader.dump(data, filename, parser=self)
-            data = self.loader.load(filename, parser=self, adjust=False)
+            self.loader.dump(data, filename, introspector=self.introspector)
+            data = self.loader.load(
+                filename, introspector=self.introspector, adjust=False
+            )
             raise
 
     def unparse(
@@ -75,4 +70,4 @@ class Parser(t.Generic[ConfigT]):
         data = None
         if not isinstance(ob, type):
             data = ob.dict()
-        self.loader.dump(data, filename, parser=self)
+        self.loader.dump(data, filename, introspector=self.introspector)
