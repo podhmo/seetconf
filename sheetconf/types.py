@@ -3,6 +3,7 @@ import typing as t
 import typing_extensions as tx
 
 
+FormatType = tx.Literal["csv", "json", "spreadsheet"]
 ConfigT = t.TypeVar("ConfigT", covariant=True)
 
 

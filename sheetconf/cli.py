@@ -1,8 +1,6 @@
 import typing as t
-
-import typing_extensions as tx
 import sys
-
+from sheetconf.types import FormatType
 
 
 def _import_symbol(module_path: str) -> object:
@@ -21,19 +19,17 @@ def _import_symbol(module_path: str) -> object:
 
 def schema(*, config: str) -> None:
     import json
-    from pydantic.schema import schema
+    from pydantic.schema import schema as create_schema_dict
 
     config_class = t.cast(t.Type[t.Any], _import_symbol(config))
-    schema_dict = schema([config_class])
+    schema_dict = create_schema_dict([config_class])
     schema_dict["$ref"] = f"#/definitions/{config_class.__name__}"
 
     print(json.dumps(schema_dict, indent=2, ensure_ascii=False))
     print()
 
 
-def init(
-    filename: str, *, config: str, format: tx.Literal["json", "csv", "spreadsheet"]
-) -> None:
+def init(filename: str, *, config: str, format: FormatType) -> None:
     from sheetconf import savefile, get_loader
     from sheetconf.usepydantic import Parser
 
@@ -49,7 +45,7 @@ def load(
     filename: str,
     *,
     config: str,
-    format: tx.Literal["json", "csv", "spreadsheet"],
+    format: FormatType,
     adjust: bool = False,
     printer: str = "pprint:pprint",
 ) -> None:

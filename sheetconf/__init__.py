@@ -1,6 +1,5 @@
 from __future__ import annotations
 import typing as t
-import typing_extensions as tx
 import sys
 import pathlib
 import logging
@@ -10,7 +9,7 @@ from sheetconf.langhelpers import get_translate_function
 from sheetconf import exceptions
 
 if t.TYPE_CHECKING:
-    from sheetconf.types import Loader, Parser, Introspector, ConfigT
+    from sheetconf.types import Loader, Parser, Introspector, ConfigT, FormatType
 
 logger = logging.getLogger(__name__)
 
@@ -182,9 +181,21 @@ class Extractor:
 
 
 def loadfile(
-    filename: str, *, parser: Parser[ConfigT], adjust: bool = False
+    filename: str,
+    *,
+    format: FormatType = "spreadsheet",
+    config: t.Optional[t.Type[ConfigT]] = None,
+    parser: t.Optional[Parser[ConfigT]] = None,
+    adjust: bool = False,
 ) -> ConfigT:
     try:
+        if parser is None:
+            from sheetconf import usepydantic
+
+            assert config is not None, "please, config class"
+            loader = get_loader(format=format)
+            parser = usepydantic.Parser(config, loader=loader)
+
         return parser.parse(filename, adjust=adjust)
     except exceptions.CredentialsFileIsNotFound as e:
         print(repr(e), file=sys.stderr)
@@ -200,12 +211,23 @@ def loadfile(
 
 
 def savefile(
-    ob: t.Any, filename: t.Optional[str] = None, *, parser: Parser[ConfigT]
+    ob: t.Any,
+    filename: t.Optional[str] = None,
+    *,
+    format: FormatType = "spreadsheet",
+    config: t.Optional[ConfigT] = None,
+    parser: Parser[ConfigT],
 ) -> None:
+    if parser is None:
+        from sheetconf import usepydantic
+
+        assert config is not None, "please, config class"
+        loader = get_loader(format=format)
+        parser = usepydantic.Parser(config, loader=loader)
     parser.unparse(ob, filename)
 
 
-def get_loader(*, format: tx.Literal["json", "csv", "spreadsheet"]) -> Loader:
+def get_loader(*, format: FormatType) -> Loader:
     if format == "json":
         return JSONLoader()
     elif format == "csv":
