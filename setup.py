@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 
-install_requires = ["pydantic", "gspread"]
+install_requires = ["pydantic", "gspread", "typing-extensions"]
 dev_requires = ["black", "flake8", "mypy"]
 tests_requires = ["pytest"]
 
