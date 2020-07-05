@@ -1,5 +1,4 @@
 # type: ignore
-import typing as t
 from sheetconf.tests.testutils import get_testdata_path
 
 
@@ -22,45 +21,17 @@ def test_json_loader():
     assert got == want
 
 
-def test_rows_loader():
-    from sheetconf import RowsLoader
-    from sheetconf.types import RowDict
+def test_csv_loader():
+    from sheetconf import CSVLoader
 
-    dummy_filename = "*filename*"
+    basedir = str(get_testdata_path("./testdata/csv-config"))
     dummy_section_names = ["slack-xxx-bot"]
-
-    rows_dict: t.Dict[str, t.Iterator[RowDict]] = {
-        "slack-xxx-bot": [
-            {
-                "name": "name",
-                "value": "someone",
-                "value_type": "str",
-                "description": None,
-            },
-            {
-                "name": "version",
-                "value": "11",
-                "value_type": "int",
-                "description": None,
-            },
-            {
-                "name": "token",
-                "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                "value_type": "str",
-                "description": None,
-            },
-        ]
-    }
 
     class DummyIntrospector:
         section_names = dummy_section_names
 
-    def get_rows(filename: str, section: str) -> t.Iterator[RowDict]:
-        assert filename == dummy_filename
-        return rows_dict[section]
-
-    loader = RowsLoader(get_rows)
-    got = loader.load(dummy_filename, introspector=DummyIntrospector(), adjust=False)
+    loader = CSVLoader()
+    got = loader.load(basedir, introspector=DummyIntrospector(), adjust=False)
     want = {
         "slack-xxx-bot": {
             "name": "someone",
@@ -68,5 +39,4 @@ def test_rows_loader():
             "token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         }
     }
-    print(got)
     assert got == want

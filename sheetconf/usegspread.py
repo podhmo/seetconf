@@ -2,6 +2,7 @@ from __future__ import annotations
 import typing as t
 import typing_extensions as tx
 import pathlib
+from sheetconf import Extractor
 from sheetconf.types import RowDict
 from sheetconf.langhelpers import reify
 from sheetconf import exceptions
@@ -54,7 +55,6 @@ class Loader:
         authorized_user_filename: str = "~/.config/sheetconf/authorized_user.json",
         port: int = 0,
     ) -> None:
-        from sheetconf import RowsLoader
         from gspread.auth import DEFAULT_SCOPES
 
         self.scopes = scopes or DEFAULT_SCOPES
@@ -62,19 +62,18 @@ class Loader:
         self.authorized_user_filename = authorized_user_filename
         self.port = port
         self._fetchers: t.Dict[str, Fetcher] = {}  # weakref?
-        self._loader = RowsLoader(self._get_rows)
-
-    def _get_rows(self, sheet_url: str, section_name: str) -> t.Iterator[RowDict]:
-        fetcher = self._fetchers.get(sheet_url)
-        if fetcher is None:
-            sheet = self.client.open_by_url(sheet_url)
-            fetcher = self._fetchers[sheet_url] = Fetcher(sheet)
-        return fetcher.fetch(section_name)
 
     def load(
         self, sheet_url: str, *, introspector: Introspector, adjust: bool
     ) -> t.Dict[str, t.Any]:
-        return self._loader.load(sheet_url, introspector=introspector, adjust=adjust)
+        def _get_rows(section_name: str) -> t.Iterator[RowDict]:
+            fetcher = self._fetchers.get(sheet_url)
+            if fetcher is None:
+                sheet = self.client.open_by_url(sheet_url)
+                fetcher = self._fetchers[sheet_url] = Fetcher(sheet)
+            return fetcher.fetch(section_name)
+
+        return Extractor(introspector).extract_config_data(get_rows=_get_rows)
 
     def dump(
         self,

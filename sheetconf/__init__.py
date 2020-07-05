@@ -66,13 +66,13 @@ class JSONLoader:
             print(file=wf)
 
 
-class CSVFetcher:
+class CSVFileAccessor:
     def __init__(self) -> None:
         import csv
 
         self._reader_class = csv.DictReader
 
-    def fetch(self, filename: str) -> t.Iterator[RowDict]:
+    def fetch_rows(self, filename: t.Union[str, pathlib.Path]) -> t.Iterator[RowDict]:
         with open(filename) as rf:
             reader = self._reader_class(rf)  # DictReader?
             for line in reader:
@@ -83,20 +83,27 @@ class CSVFetcher:
                     row["description"] = None
                 yield row
 
+    def store_rows(
+        self, filename: t.Union[str, pathlib.Path, None], rows: t.Iterator[RowDict]
+    ) -> None:
+        import csv
+        import contextlib
+
+        with contextlib.ExitStack() as s:
+            wf = sys.stdout
+            if filename is not None:
+                wf = s.enter_context(open(filename, "w"))
+
+            w = csv.DictWriter(
+                wf, fieldnames=["name", "value", "value_type", "description"]
+            )
+            w.writeheader()
+            w.writerows(rows)
+
 
 class CSVLoader:
     def __init__(self, *, ext: str = ".csv") -> None:
         self.ext = ext
-        self._fetcher = CSVFetcher()
-        self._loader = RowsLoader(self._get_rows)
-
-    def _get_rows(self, basedir: str, section_name: str) -> t.Iterator[RowDict]:
-        filepath = self._get_filepath(basedir, section_name)
-        try:
-            rows = self._fetcher.fetch(str(filepath))
-            return iter(list(rows))  # for detecting FileNotFoundError here
-        except FileNotFoundError:
-            return iter([])
 
     def _get_filepath(
         self, basedir: t.Optional[str], section_name: str
@@ -105,9 +112,19 @@ class CSVLoader:
         return (basepath / section_name).with_suffix(self.ext)
 
     def load(
-        self, filename: str, *, introspector: Introspector, adjust: bool
+        self, basedir: str, *, introspector: Introspector, adjust: bool
     ) -> t.Dict[str, t.Any]:
-        return self._loader.load(filename, introspector=introspector, adjust=adjust)
+        accessor = CSVFileAccessor()
+
+        def _get_rows(section_name: str) -> t.Iterator[RowDict]:
+            filepath = self._get_filepath(basedir, section_name)
+            try:
+                rows = accessor.fetch_rows(filepath)
+                return iter(list(rows))  # for detecting FileNotFoundError here
+            except FileNotFoundError:
+                return iter([])
+
+        return Extractor(introspector).extract_config_data(get_rows=_get_rows)
 
     def dump(
         self,
@@ -116,57 +133,50 @@ class CSVLoader:
         *,
         introspector: Introspector,
     ) -> None:
-        import csv
-        import contextlib
-
         ob = ob or {}
+        accessor = CSVFileAccessor()
+        extractor = Extractor(introspector)
         if basedir is not None and not pathlib.Path(basedir).exists():
             pathlib.Path(basedir).mkdir(parents=True)
 
-        # todo: refactoring
         for section in introspector.section_names:
-            rows = []
-            sob = ob.get(section) or {}
+            rows = extractor.extract_rows_with_config_data(ob, section)
 
-            for row in introspector.get_fields(section):
-                if row["name"] in sob:
-                    row["value"] = sob[row["name"]]
-                rows.append(row)
-
-            with contextlib.ExitStack() as s:
-                wf = sys.stdout
-                csvpath = self._get_filepath(basedir, section)
-
-                if basedir is not None:
-                    wf = s.enter_context(open(csvpath, "w"))
-
-                if wf == sys.stdout:
-                    print(f"* file {csvpath}", file=sys.stderr)
-
-                w = csv.DictWriter(
-                    wf, fieldnames=["name", "value", "value_type", "description"]
-                )
-                w.writeheader()
-                w.writerows(rows)
+            csvpath: t.Optional[pathlib.Path] = self._get_filepath(basedir, section)
+            if basedir is None:
+                print(f"* file {csvpath}", file=sys.stderr)
+                csvpath = None
+            accessor.store_rows(csvpath, rows)
 
 
-class RowsLoader:
-    def __init__(self, get_rows: t.Callable[[str, str], t.Iterator[RowDict]]) -> None:
-        self._get_rows_function = get_rows
+class Extractor:
+    def __init__(self, introspector: Introspector) -> None:
+        self.introspector = introspector
         self._get_translate_function = get_translate_function
 
-    def load(
-        self, filename: str, *, introspector: Introspector, adjust: bool
+    def extract_config_data(
+        self, *, get_rows: t.Callable[[str], t.Iterator[RowDict]]
     ) -> t.Dict[str, t.Any]:
         data: t.Dict[str, t.Any] = {}
+        introspector = self.introspector
         for section in introspector.section_names:
-            rows = self._get_rows_function(filename, section)
+            rows = get_rows(section)
             section_data = {}
             for row in rows:
                 _translate = self._get_translate_function(row["value_type"])
                 section_data[row["name"]] = _translate(row["value"])
             data[section] = section_data
         return data
+
+    def extract_rows_with_config_data(
+        self, ob: t.Dict[str, t.Any], section: str
+    ) -> t.Iterator[RowDict]:
+        sob = ob.get(section) or {}
+
+        for row in self.introspector.get_fields(section):
+            if row["name"] in sob:
+                row["value"] = sob[row["name"]]
+            yield row
 
 
 def loadfile(

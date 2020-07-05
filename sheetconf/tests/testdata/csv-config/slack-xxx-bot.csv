@@ -1,0 +1,4 @@
+name,value,value_type
+name,someone,str
+version,11,int
+token,xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,str
